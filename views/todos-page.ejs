@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css"
+    />
+    <title>Daftar Tugas Saya</title>
+  </head>
+  <body>
+    <div class="container mt-5">
+      <h1>Daftar Tugas Saya</h1>
+      
+      <!-- Form Tambah Tugas -->
+      <div class="card mb-4">
+        <div class="card-body">
+          <h5 class="card-title">Tambah Tugas Baru</h5>
+          <form id="addTodoForm" class="mb-3">
+            <div class="form-group">
+              <input type="text" class="form-control" id="newTask" placeholder="Masukkan tugas baru" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Tambah Tugas</button>
+          </form>
+        </div>
+      </div>
+
+      <!-- Daftar Tugas -->
+      <div class="card">
+        <div class="card-body">
+          <h5 class="card-title">Daftar Tugas</h5>
+          <% if (todos && todos.length > 0) { %>
+            <ul class="list-group">
+              <% todos.forEach(function(todo) { %>
+                <li class="list-group-item d-flex justify-content-between align-items-center">
+                  <span>
+                    ID: <%= todo.id %> - Tugas: <span id="task-<%= todo.id %>"><%= todo.task %></span>
+                  </span>
+                  <div class="btn-group">
+                    <button class="btn btn-sm btn-warning mr-2" onclick='showEditForm("<%- todo.id %>", "<%- todo.task %>")'>Edit</button>
+                    <button class="btn btn-sm btn-danger" onclick='deleteTodo("<%- todo.id %>")'>Hapus</button>
+                  </div>
+                </li>
+                <!-- Form Edit (hidden by default) -->
+                <li id="edit-form-<%- todo.id %>" class="list-group-item d-none">
+                  <form onsubmit='updateTodo(event, "<%- todo.id %>")'>
+                    <div class="input-group">
+                      <input type="text" class="form-control" id="edit-task-<%- todo.id %>" value="<%- todo.task %>" required>
+                      <div class="input-group-append">
+                        <button type="submit" class="btn btn-success">Simpan</button>
+                        <button type="button" class="btn btn-secondary" onclick='hideEditForm("<%- todo.id %>")'>Batal</button>
+                      </div>
+                    </div>
+                  </form>
+                </li>
+              <% }); %>
+            </ul>
+          <% } else { %>
+            <p>Tidak ada tugas yang tersedia.</p>
+          <% } %>
+        </div>
+      </div>
+
+      <a href="/" class="btn btn-primary mt-3">Go to Home</a>
+    </div>
+
+    <script>
+      // Fungsi untuk menambah todo
+      document.getElementById('addTodoForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const task = document.getElementById('newTask').value;
+        
+        try {
+          const response = await fetch('/todos', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ task }),
+          });
+          
+          if (response.ok) {
+            window.location.reload();
+          } else {
+            alert('Gagal menambah tugas');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Terjadi kesalahan');
+        }
+      });
+
+      // Fungsi untuk menampilkan form edit
+      function showEditForm(id, task) {
+        document.getElementById(`edit-form-${id}`).classList.remove('d-none');
+        document.getElementById(`edit-task-${id}`).value = task;
+      }
+
+      // Fungsi untuk menyembunyikan form edit
+      function hideEditForm(id) {
+        document.getElementById(`edit-form-${id}`).classList.add('d-none');
+      }
+
+      // Fungsi untuk mengupdate todo
+      async function updateTodo(event, id) {
+        event.preventDefault();
+        const task = document.getElementById(`edit-task-${id}`).value;
+        
+        try {
+          const response = await fetch(`/todos/${id}`, {
+            method: 'PUT',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ task }),
+          });
+          
+          if (response.ok) {
+            window.location.reload();
+          } else {
+            alert('Gagal mengupdate tugas');
+          }
+        } catch (error) {
+          console.error('Error:', error);
+          alert('Terjadi kesalahan');
+        }
+      }
+
+      // Fungsi untuk menghapus todo
+      async function deleteTodo(id) {
+        if (confirm('Apakah Anda yakin ingin menghapus tugas ini?')) {
+          try {
+            const response = await fetch(`/todos/${id}`, {
+              method: 'DELETE',
+            });
+            
+            if (response.ok) {
+              window.location.reload();
+            } else {
+              alert('Gagal menghapus tugas');
+            }
+          } catch (error) {
+            console.error('Error:', error);
+            alert('Terjadi kesalahan');
+          }
+        }
+      }
+    </script>
+  </body>
+</html>
