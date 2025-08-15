@@ -30,15 +30,19 @@ app.get("/todos-data", (req, res) => {
 });
 
 app.get("/todos-list", (req, res) => {
-  res.render("todos-page", { todos: todos });
+  res.render("todos-page", {
+    layout: "layouts/main-layout",
+    todos: todos
+  });
 });
 
-app.get("/todos-view", (req, res) => {
+app.get("/todo-view", (req, res) => {
   db.query("SELECT * FROM todos", (err, todos) => {
     if (err) return res.status(500).send("Internal Server Error");
-    res.render("todo", { 
-      todos: todos,
-     })
+    res.render("todo", {
+      layout  : "layouts/main-layout",
+      todos: todos
+    })
   });
 });
 
