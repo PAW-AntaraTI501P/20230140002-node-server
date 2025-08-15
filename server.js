@@ -1,22 +1,28 @@
 require("dotenv").config(); // Load environment variables from .env file
 const express = require("express");
 const app = express();
-const todoRoutes = require("./routes/todo.js");
+const todoRoutes = require("./routes/tododb.js");
 const { todos } = require("./routes/todo.js");
+const db = require("./database/db"); // Import database connection
 const port = process.env.PORT || 3000; // Use environment variable or default to 3000
+const expressLayouts = require("express-ejs-layouts");
+app.use(expressLayouts);
 
 app.use(express.json());
 //atur EJS sebagai view engine
 app.set("view engine", "ejs");
 
 app.use("/todos", todoRoutes);
-
 app.get("/", (req, res) => {
-  res.render("index");//rendering the index.ejs file
+  res.render("index", {
+    layout: "layouts/main-layout"
+  });
 });
 
 app.get("/contact", (req, res) => {
-  res.render("contact");//rendering the contact.ejs file
+  res.render("contact", {
+    layout: "layouts/main-layout"
+  });
 });
 
 app.get("/todos-data", (req, res) => {
@@ -25,6 +31,15 @@ app.get("/todos-data", (req, res) => {
 
 app.get("/todos-list", (req, res) => {
   res.render("todos-page", { todos: todos });
+});
+
+app.get("/todos-view", (req, res) => {
+  db.query("SELECT * FROM todos", (err, todos) => {
+    if (err) return res.status(500).send("Internal Server Error");
+    res.render("todo", { 
+      todos: todos,
+     })
+  });
 });
 
 app.use((req, res, next) => {
