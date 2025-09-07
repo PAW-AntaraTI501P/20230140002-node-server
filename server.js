@@ -7,6 +7,10 @@ const db = require("./database/db"); // Import database connection
 const port = process.env.PORT || 3000; // Use environment variable or default to 3000
 const expressLayouts = require("express-ejs-layouts");
 app.use(expressLayouts);
+const authRoutes = require("./routes/auth.js");
+const authMiddleware = require("./middleware/auth");
+const cors = require('cors');
+app.use(cors());
 
 app.use(express.json());
 //atur EJS sebagai view engine
@@ -142,6 +146,9 @@ app.delete("/api/todos/:id", (req, res) => {
         res.json({ message: 'Todo deleted successfully' });
     });
 });
+
+app.use("/api/auth", authRoutes);
+app.use("/api/todos", authMiddleware, todoRoutes);
 
 app.use((req, res, next) => {
   res.status(404).render("404"); 
